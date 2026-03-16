@@ -212,44 +212,21 @@ nav button.active { background: var(--accent); color: white; }
   #editor-wrap { flex-direction: column; height: auto; }
   .editor-side { width: 100%; }
 }
-.thread-list { display: flex; flex-direction: column; gap: 0; margin-top: 18px; }
-.thread-item {
   background: var(--surface); border: 1.5px solid var(--surface2);
   border-radius: var(--radius); margin-bottom: 12px;
   transition: border-color 0.2s;
 }
-.thread-item:hover { border-color: var(--accent4); }
-.thread-header { padding: 16px 18px 12px; }
-.thread-header h3 { font-size: 1rem; font-weight: 800; margin-bottom: 5px; cursor: pointer; }
-.thread-header h3:hover { color: var(--accent4); }
-.thread-body-text { font-size: 0.87rem; color: var(--text-dim); margin-bottom: 10px; }
-.thread-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.vote-btn {
   background: var(--surface2); border: none; color: var(--text-dim);
   padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.78rem;
   font-family: 'Nunito', sans-serif; font-weight: 700; transition: all 0.15s;
   display: flex; align-items: center; gap: 4px;
 }
-.vote-btn:hover { background: var(--surface3); color: var(--accent); }
-.vote-btn.voted { color: var(--accent); }
-.thread-meta { font-size: 0.75rem; color: var(--text-dim); }
 .replies-section { border-top: 1px solid var(--surface2); }
-.reply-input-row { display: flex; gap: 8px; padding: 12px 18px; background: var(--surface2); }
-.reply-input-row input { flex: 1; }
 /* Nested replies */
 .replies-list { padding: 0 18px 10px; }
-.reply-node { margin-top: 10px; }
-.reply-card {
   background: var(--surface2); border-radius: 10px; padding: 11px 14px;
   border-left: 3px solid var(--surface3); transition: border-color 0.2s;
 }
-.reply-card:hover { border-left-color: var(--accent4); }
-.reply-top { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }
-.reply-author { font-size: 0.78rem; font-weight: 800; color: var(--accent4); }
-.reply-time { font-size: 0.7rem; color: var(--text-dim); }
-.reply-text { font-size: 0.85rem; color: var(--text); margin-bottom: 7px; }
-.reply-actions { display: flex; gap: 8px; }
-.reply-children { margin-left: 20px; border-left: 2px solid var(--surface3); padding-left: 12px; }
 
 /* ── PROFILE ── */
 .profile-header {
@@ -404,7 +381,6 @@ nav button.active { background: var(--accent); color: white; }
     <button onclick="navTo('juegos',this)">🎮 Juegos</button>
     <button onclick="openChat()" id="chatNavBtn">💬 Chat <span id="chatBadge" style="display:none;background:var(--accent);color:white;font-size:0.6rem;padding:1px 5px;border-radius:10px;margin-left:2px">0</span></button>
     <button onclick="navTo('crear',this)">⚡ Crear</button>
-    <button onclick="navTo('hilos',this)">💬 Hilos</button>
     <button onclick="navTo('tienda',this)">💎 Tienda</button>
   </nav>
   <div class="search-bar">
@@ -501,18 +477,6 @@ nav button.active { background: var(--accent); color: white; }
   </div>
 </div>
 
-<!-- ═══ HILOS ═══ -->
-<div id="hilos" class="section">
-  <div class="sec-title">💬 Hilos</div>
-  <div class="sec-sub">Discusiones de la comunidad — respuestas anidadas estilo Reddit</div>
-  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
-    <input class="inp" id="newThreadTitle" placeholder="Título del hilo..." style="flex:1;min-width:180px">
-    <input class="inp" id="newThreadBody" placeholder="Descripción..." style="flex:2;min-width:200px">
-    <button class="btn btn-primary" onclick="addThread()">+ Publicar</button>
-  </div>
-  <div class="thread-list" id="threadList"></div>
-</div>
-
 <!-- ═══ TIENDA ═══ -->
 <div id="tienda" class="section">
   <div class="sec-title">💎 Tienda de Diamantes</div>
@@ -536,7 +500,6 @@ nav button.active { background: var(--accent); color: white; }
         <p id="profileBio">Sin bio</p>
         <div class="profile-stats">
           <div class="stat-box"><div class="num" id="statGames">0</div><div class="lbl">Juegos</div></div>
-          <div class="stat-box"><div class="num" id="statThreads">0</div><div class="lbl">Hilos</div></div>
           <div class="stat-box"><div class="num" id="statDiamonds">0</div><div class="lbl">💎</div></div>
         </div>
       </div>
@@ -610,14 +573,6 @@ nav button.active { background: var(--accent); color: white; }
     <h3 style="font-family:'Fredoka One',cursive;font-size:1.1rem;margin-bottom:14px;color:var(--accent2)">🎮 Gestión de juegos</h3>
     <div id="adminGamesList"></div>
   </div>
-
-  <!-- Hilos -->
-  <div style="background:var(--surface);border-radius:var(--radius);border:1.5px solid var(--surface2);padding:20px;">
-    <h3 style="font-family:'Fredoka One',cursive;font-size:1.1rem;margin-bottom:14px;color:var(--accent2)">💬 Gestión de hilos</h3>
-    <div id="adminThreadsList"></div>
-  </div>
-</div>
-
 <!-- Modal confirmación logout -->
 <div id="logoutModal" class="modal-overlay">
   <div class="modal-box" style="width:min(340px,95vw);text-align:center">
@@ -900,7 +855,6 @@ function initApp() {
   applyUserTheme();
   applyUserWallpaper();
   renderProfile();
-  renderThreads();
   renderGames();
   updateNotifBadge();
   setTimeout(initCodeEditor, 100);
@@ -966,7 +920,6 @@ function navTo(id, btn) {
   if (id==='crear') setTimeout(()=>{ initCodeEditor(); if(codeEditor) codeEditor.refresh(); }, 100);
   if (id==='perfil') renderProfile();
   if (id==='tienda') showShopTab('avatares');
-  if (id==='hilos') renderThreads();
   if (id==='admin') renderAdminPanel();
   if (id==='notificaciones') renderNotifications();
 }
@@ -1319,172 +1272,6 @@ function editGame(i){
 }
 
 // ═══════════════════════════════════════════
-//  THREADS — REDDIT STYLE (Firestore)
-// ═══════════════════════════════════════════
-let cachedThreads = [];
-
-async function getThreads(){
-  try {
-    const snap = await db.collection('threads').orderBy('time','desc').limit(50).get();
-    cachedThreads = [];
-    snap.forEach(doc => cachedThreads.push({id:doc.id, ...doc.data()}));
-    return cachedThreads;
-  } catch(e){ return cachedThreads; }
-}
-
-async function saveThread(thread){
-  try {
-    if(thread.id && typeof thread.id === 'string' && thread.id.length > 10){
-      await db.collection('threads').doc(thread.id).set(thread);
-    } else {
-      const ref = await db.collection('threads').add(thread);
-      thread.id = ref.id;
-    }
-  } catch(e){ toast('❌ Error guardando hilo: '+e.message); }
-}
-
-async function addThread(){
-  const title=document.getElementById('newThreadTitle').value.trim();
-  const body=document.getElementById('newThreadBody').value.trim();
-  if(!title)return;
-  const thread = {title, body:body||'(sin descripción)', author:currentUsername, votes:0, time:Date.now(), replies:[], votedBy:{}};
-  try {
-    await db.collection('threads').add(thread);
-    document.getElementById('newThreadTitle').value='';
-    document.getElementById('newThreadBody').value='';
-    renderThreads();
-    addDiamonds(3);
-    toast('💬 Hilo publicado +3 💎');
-  } catch(e){ toast('❌ Error: '+e.message); }
-}
-
-async function voteThread(id, dir){
-  const threads = await getThreads();
-  const t = threads.find(t=>t.id===id);
-  if (!t) return;
-  if (!t.votedBy) t.votedBy = {};
-  const prev = t.votedBy[currentUsername] || 0;
-  if (prev === dir) { t.votes -= dir; delete t.votedBy[currentUsername]; }
-  else { t.votes -= prev; t.votes += dir; t.votedBy[currentUsername] = dir; }
-  await saveThread(t);
-  renderThreads();
-}
-
-function voteReplyNode(replies, replyId, dir){
-  for (let r of replies){
-    if (r.id === replyId){
-      if (!r.votedBy) r.votedBy = {};
-      const prev = r.votedBy[currentUsername] || 0;
-      if (prev === dir){ r.votes -= dir; delete r.votedBy[currentUsername]; }
-      else { r.votes -= prev; r.votes += dir; r.votedBy[currentUsername] = dir; }
-      return true;
-    }
-    if (r.replies && voteReplyNode(r.replies, replyId, dir)) return true;
-  }
-  return false;
-}
-
-async function renderThreads(){
-  const list=document.getElementById('threadList');
-  list.innerHTML='<p style="color:var(--text-dim);text-align:center;padding:20px">Cargando hilos... ⏳</p>';
-  const threads = await getThreads();
-  list.innerHTML=threads.map(t=>`
-    <div class="thread-item" id="thread-${t.id}">
-      <div class="thread-header">
-        <h3 onclick="toggleReplies('${t.id}')">${escHtml(t.title)}</h3>
-        <p class="thread-body-text">${escHtml(t.body)}</p>
-        <div class="thread-foot">
-          <button class="vote-btn ${(t.votedBy&&t.votedBy[currentUsername]===1)?'voted':''}" onclick="voteThread('${t.id}',1)">▲ ${t.votes}</button>
-          <button class="vote-btn ${(t.votedBy&&t.votedBy[currentUsername]===-1)?'voted':''}" onclick="voteThread('${t.id}',-1)">▼</button>
-          <span class="thread-meta">por <strong>${escHtml(t.author)}</strong> · ${timeAgo(t.time)}</span>
-          <button class="vote-btn" onclick="toggleReplies('${t.id}')">💬 ${countReplies(t.replies||[])} respuestas</button>
-        </div>
-      </div>
-      <div class="replies-section" id="replies-${t.id}" style="display:none">
-        <div class="reply-input-row">
-          <input class="inp" id="replyInput-${t.id}" placeholder="Escribe una respuesta...">
-          <button class="btn btn-blue btn-sm" onclick="addReply('${t.id}',null)">Responder</button>
-        </div>
-        <div class="replies-list" id="repliesList-${t.id}">
-          ${renderReplies(t.replies||[], t.id)}
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function toggleReplies(id){
-  const el=document.getElementById('replies-'+id);
-  if(el) el.style.display=el.style.display==='none'?'block':'none';
-}
-
-async function addReply(threadId, parentReplyId){
-  const inputId = parentReplyId ? 'replyInput-'+parentReplyId : 'replyInput-'+threadId;
-  const input = document.getElementById(inputId);
-  if(!input)return;
-  const text = input.value.trim();
-  if(!text)return;
-  const newReply={id:'r'+Date.now(),author:currentUsername,text,time:Date.now(),votes:0,votedBy:{},replies:[]};
-
-  const threads = await getThreads();
-  const thread = threads.find(t=>t.id===threadId);
-  if(!thread)return;
-
-  if(parentReplyId){
-    function addToReply(replies){
-      for(let r of replies){if(r.id===parentReplyId){r.replies=r.replies||[];r.replies.push(newReply);return true;}if(r.replies&&addToReply(r.replies))return true;}
-    }
-    addToReply(thread.replies);
-  } else {
-    thread.replies = thread.replies||[];
-    thread.replies.push(newReply);
-  }
-  await saveThread(thread);
-  input.value='';
-  addDiamonds(1);
-  renderThreads();
-  setTimeout(()=>{const el=document.getElementById('replies-'+threadId);if(el)el.style.display='block';},50);
-}
-
-async function voteReply(threadId, replyId, dir){
-  const threads = await getThreads();
-  const thread = threads.find(t=>t.id===threadId);
-  if(!thread)return;
-  voteReplyNode(thread.replies||[], replyId, dir);
-  await saveThread(thread);
-  renderThreads();
-  setTimeout(()=>{const el=document.getElementById('replies-'+threadId);if(el)el.style.display='block';},50);
-}
-
-function renderReplies(replies, threadId, depth=0){
-  if(!replies||!replies.length)return'';
-  return replies.map(r=>`
-    <div class="reply-node">
-      <div class="reply-card">
-        <div class="reply-top">
-          <span class="reply-author">${escHtml(r.author)}</span>
-          <span class="reply-time">${timeAgo(r.time)}</span>
-        </div>
-        <div class="reply-text">${escHtml(r.text)}</div>
-        <div class="reply-actions">
-          <button class="vote-btn ${(r.votedBy&&r.votedBy[currentUsername]===1)?'voted':''}" onclick="voteReply('${threadId}','${r.id}',1)">▲ ${r.votes||0}</button>
-          <button class="vote-btn ${(r.votedBy&&r.votedBy[currentUsername]===-1)?'voted':''}" onclick="voteReply('${threadId}','${r.id}',-1)">▼</button>
-          ${depth<4?`<button class="vote-btn" onclick="showReplyInput('${r.id}')">↩ Responder</button>`:''}
-        </div>
-        <div id="replyInputBox-${r.id}" style="display:none;margin-top:8px;display:flex;gap:6px">
-          <input class="inp" id="replyInput-${r.id}" placeholder="Responder a ${escHtml(r.author)}...">
-          <button class="btn btn-blue btn-xs" onclick="addReply('${threadId}','${r.id}')">↩</button>
-        </div>
-      </div>
-      ${r.replies&&r.replies.length?`<div class="reply-children">${renderReplies(r.replies,threadId,depth+1)}</div>`:''}
-    </div>`).join('');
-}
-
-function showReplyInput(replyId){
-  const box=document.getElementById('replyInputBox-'+replyId);
-  if(box){box.style.display=box.style.display==='none'?'flex':'none';}
-}
-
-// ═══════════════════════════════════════════
 //  SHOP
 // ═══════════════════════════════════════════
 const SHOP_AVATARES=[
@@ -1677,8 +1464,7 @@ function renderProfile(){
   document.getElementById('sessionUser').textContent = currentUsername || '';
   const myGames = cachedGames.filter(g=>g.author===currentUsername);
   document.getElementById('statGames').textContent = myGames.length;
-  const myThreads = cachedThreads.filter(t=>t.author===currentUsername);
-  document.getElementById('statThreads').textContent = myThreads.length;
+  document.getElementById('statThreads').textContent = 0;
   const theme = SHOP_TEMAS.find(t=>t.id===userProfile.theme);
   document.getElementById('activeThemeName').textContent = theme ? theme.name : 'Por defecto';
 }
@@ -2167,21 +1953,6 @@ function renderAdminPanel(){
         <button class="btn btn-primary btn-xs" onclick="adminDeleteGame(${i})">🗑 Borrar</button>
       </div>`).join('');
   }
-
-  // Hilos
-  const threads = cachedThreads;
-  const tl = document.getElementById('adminThreadsList');
-  if(!threads.length){ tl.innerHTML='<p style="color:var(--text-dim);font-size:0.85rem">No hay hilos.</p>'; }
-  else {
-    tl.innerHTML = threads.map((t,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface2)">
-        <div style="flex:1">
-          <div style="font-weight:800;font-size:0.9rem">${escHtml(t.title)}</div>
-          <div style="font-size:0.75rem;color:var(--text-dim)">por ${escHtml(t.author||'?')} · ▲${t.votes}</div>
-        </div>
-        <button class="btn btn-primary btn-xs" onclick="adminDeleteThread(${i})">🗑 Borrar</button>
-      </div>`).join('');
-  }
 }
 
 async function adminDeleteGame(i){
@@ -2193,14 +1964,7 @@ async function adminDeleteGame(i){
   toast('🗑 Juego eliminado');
 }
 
-async function adminDeleteThread(i){
-  if(!confirm('¿Borrar este hilo?'))return;
-  const thread = cachedThreads[i];
-  if(!thread)return;
-  await db.collection('threads').doc(thread.id).delete();
-  renderAdminPanel();
-  toast('🗑 Hilo eliminado');
-}
+
 
 async function adminGiveDiamonds(){
   const username = document.getElementById('adminTargetUser').value.trim();
