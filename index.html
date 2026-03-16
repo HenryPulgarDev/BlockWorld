@@ -939,6 +939,22 @@ function updateHeader() {
   }
 }
 
+function addDiamonds(amount) {
+  if (!currentUser) return;
+  userProfile.diamonds = (userProfile.diamonds || 0) + amount;
+  saveUserProfile({ diamonds: userProfile.diamonds });
+  updateHeader();
+}
+
+function spendDiamonds(amount) {
+  if (!currentUser) return false;
+  if ((userProfile.diamonds || 0) < amount) { toast('❌ No tienes suficientes 💎'); return false; }
+  userProfile.diamonds -= amount;
+  saveUserProfile({ diamonds: userProfile.diamonds });
+  updateHeader();
+  return true;
+}
+
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
@@ -1481,6 +1497,7 @@ const SHOP_AVATARES=[
   {id:'photo_profile',icon:'📷',name:'Foto de perfil',desc:'Sube tu propia imagen 500x500px',price:2500},
 ];
 const SHOP_TEMAS=[
+  {id:'th_light',name:'☀️ Modo Día',desc:'Fondo blanco para usar de día',price:0,colors:{bg:'#f5f5f5',surface:'#ffffff',surface2:'#e8e8e8',surface3:'#d0d0d0',accent:'#e63f6e',accent2:'#f9a825',text:'#1a1a2e',textDim:'#666680'}},
   {id:'th_sunset',name:'Sunset',desc:'Tonos cálidos rojizos',price:60,colors:{bg:'#1a0a0a',surface:'#2a1010',accent:'#ff4500',accent2:'#ff8c00'}},
   {id:'th_ocean',name:'Ocean Deep',desc:'Azules profundos',price:60,colors:{bg:'#030d1a',surface:'#061428',accent:'#0077ff',accent2:'#00d4ff'}},
   {id:'th_forest',name:'Forest',desc:'Verdes naturales',price:60,colors:{bg:'#041208',surface:'#071f0e',accent:'#00c853',accent2:'#b9f6ca'}},
@@ -1519,7 +1536,7 @@ function showShopTab(tab){
         <div class="item-icon">🎨</div>
         <h3>${item.name}</h3><p>${item.desc}</p>
         <div class="item-price">💎 ${item.price}</div>
-        ${owned.includes(item.id)?`<button class="btn btn-success btn-sm" onclick="applyTheme('${item.id}')">Activar</button>`:`<button class="btn btn-diamond btn-sm" onclick="buyTheme('${item.id}',${item.price})">Comprar</button>`}
+        ${owned.includes(item.id)||item.price===0 ? `<button class="btn btn-success btn-sm" onclick="applyTheme('${item.id}')">Activar</button>` : `<button class="btn btn-diamond btn-sm" onclick="buyTheme('${item.id}',${item.price})">Comprar</button>`}
       </div>`).join('')}</div>`;
   } else {
     c.innerHTML=`<div style="max-width:500px;margin:0 auto">
@@ -1589,8 +1606,14 @@ function applyTheme(id){
   const theme=SHOP_TEMAS.find(t=>t.id===id);
   if(!theme)return;
   const r=document.documentElement.style;
-  r.setProperty('--bg',theme.colors.bg);r.setProperty('--surface',theme.colors.surface);
-  r.setProperty('--accent',theme.colors.accent);r.setProperty('--accent2',theme.colors.accent2);
+  r.setProperty('--bg',theme.colors.bg);
+  r.setProperty('--surface',theme.colors.surface);
+  r.setProperty('--accent',theme.colors.accent);
+  r.setProperty('--accent2',theme.colors.accent2);
+  if(theme.colors.surface2) r.setProperty('--surface2',theme.colors.surface2);
+  if(theme.colors.surface3) r.setProperty('--surface3',theme.colors.surface3);
+  if(theme.colors.text) r.setProperty('--text',theme.colors.text);
+  if(theme.colors.textDim) r.setProperty('--text-dim',theme.colors.textDim);
   userProfile.theme=id;
   saveUserProfile({theme:id});
   document.getElementById('activeThemeName').textContent=theme.name;
@@ -2146,7 +2169,7 @@ function renderAdminPanel(){
   }
 
   // Hilos
-  const threads = getThreads();
+  const threads = cachedThreads;
   const tl = document.getElementById('adminThreadsList');
   if(!threads.length){ tl.innerHTML='<p style="color:var(--text-dim);font-size:0.85rem">No hay hilos.</p>'; }
   else {
@@ -2170,11 +2193,11 @@ async function adminDeleteGame(i){
   toast('🗑 Juego eliminado');
 }
 
-function adminDeleteThread(i){
+async function adminDeleteThread(i){
   if(!confirm('¿Borrar este hilo?'))return;
-  const threads = getThreads();
-  threads.splice(i,1);
-  saveThreads(threads);
+  const thread = cachedThreads[i];
+  if(!thread)return;
+  await db.collection('threads').doc(thread.id).delete();
   renderAdminPanel();
   toast('🗑 Hilo eliminado');
 }
